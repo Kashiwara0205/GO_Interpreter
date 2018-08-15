@@ -54,6 +54,7 @@ const (
 
 	// 追加対応
 	STRING = "STRING"
+	COLON = ":"
 )
 
 // キーワードハッシュ

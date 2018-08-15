@@ -108,6 +108,8 @@ func (l *Lexer) NextToken() token.Token {
 	case '"':
 		tok.Type = token.STRING
 		tok.Literal = l.readString()
+	case ':':
+		tok = newToken(token.COLON, l.ch)
 	case 0:
 		// ここだけ書き方違うけど多分 l.chでかけないから崩してるだけで
 		// やってることは同じ 空白　＝　１トークン
