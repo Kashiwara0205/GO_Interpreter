@@ -31,6 +31,7 @@ func TestNextToken(t *testing.T){
 	"foo bar"
 	[1, 2];
 	{"foo": "bar"}
+	loop(5){ 1 }
 	`
 
 	// 構造体
@@ -126,6 +127,13 @@ func TestNextToken(t *testing.T){
 		{token.STRING, "foo"},
 		{token.COLON, ":"},
 		{token.STRING, "bar"},
+		{token.RBRACE, "}"},
+		{token.LOOP, "loop"},
+		{token.LPAREN, "("},
+		{token.INT, "5"},
+		{token.RPAREN, ")"},
+		{token.LBRACE, "{"},
+		{token.INT, "1"},
 		{token.RBRACE, "}"},
 		{token.EOF, ""},
 	}

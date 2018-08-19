@@ -90,6 +90,7 @@ func New(l *lexer.Lexer) *Parser{
 	p.registerPrefix(token.STRING, p.parseStringLiteral)
 	p.registerPrefix(token.LBRACKET, p.parseArrayLiteral)
 	p.registerPrefix(token.LBRACE, p.parseHashLiteral)
+	p.registerPrefix(token.LOOP, p.parseLoopExpression)
 
 	// 中置型構文関数の初期化
 	p.infixParseFns = make(map[token.TokenType]infixParseFn)
@@ -516,7 +517,7 @@ func (p *Parser) parseIfExpression() ast.Expression{
 	// if(式){処理}else{処理}
 	// if（式）{処理}
 
-	// [if] ( [x < y] [ ) ]  ←　RAPAENは左括弧
+	// [if] ( [x < y] [ ) ]  ←　RAPAENは右括弧
 	if !p.expectPeek(token.RPAREN){
 		return nil
 	}
@@ -542,6 +543,32 @@ func (p *Parser) parseIfExpression() ast.Expression{
 	return expression
 }
 /*-------------------------------------------------------------------------------*/
+
+// Loopを解析する
+func (p *Parser) parseLoopExpression() ast.Expression{
+	// ノード生成
+	expression := &ast.LoopExpression{Token: p.curToken}
+	// 左括弧 「 ( 」 だったらトークンを進める 違ったらnilを返却
+	if !p.expectPeek(token.LPAREN){
+		return nil
+	}
+	// 次トークンであるConditonを見に行く
+	p.nextToken()
+	// 条件を取得 (ここで数値が入る)
+	expression.Condition = p.parseExpression(LOWSET)
+	// 右括弧 「 ) 」 だったらトークンを進める 違ったらnilを返却
+	if !p.expectPeek(token.RPAREN){
+		return nil
+	}
+	// 右ふにゃ括弧「 { 」だったらトークンを進める 違ったらnilを返却
+	if !p.expectPeek(token.LBRACE){
+		return nil
+	}
+	// 内部のループ部分を取得
+	expression.Internal = p.parseBlockStatement()
+
+	return  expression
+}
 
 /*parseBlockStatement解析-------------------------------------------------------*/
 func (p *Parser) parseBlockStatement() *ast.BlockStatement {

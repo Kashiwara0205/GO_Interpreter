@@ -665,6 +665,62 @@ func TestIfExpression(t *testing.T){
 	}
 }
 
+func TestLoopExpression(t *testing.T){
+	input := `loop (5) { 1 }`
+	// 字句解析
+	l := lexer.New(input)
+	// 構文解析の準備を整える
+	p := New(l)
+	// 構文解析完了
+	program := p.ParseProgram()
+	// エラーチェック
+	checkParseErrors(t, p)
+
+	// ProguramツリーからExpressionノードを取り出し
+	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+	// Expressionノードを取り出せたか（変換がかけられたか）
+	if !ok{
+		t.Fatalf("program.Statements[0] is not ast.ExpressionStatement. got=%T",
+			program.Statements[0])
+	}
+
+	// loopノードは１本である
+	if len(program.Statements) != 1{
+		t.Fatalf("program.Statements does not contain %d statements . got=%d\n",
+			1, len(program.Statements))
+	}
+
+	// LoopExpressionに変換
+	exp, ok := stmt.Expression.(*ast.LoopExpression)
+
+	// LoopExpressionに変換できたかどうか
+	if !ok{
+		t.Fatalf("stmt.Expression is not ast.LoopExpression. got=%T",
+				 stmt.Expression)
+	}
+
+	// ちゃんと5ループを意味する5という数値が入っているのか
+	testIntegerLiteral(t, exp.Condition, 5)
+
+
+	// 内部処理を表すBlockStatementsノードは１本だけである
+	if len(exp.Internal.Statements) != 1{
+		t.Errorf("Interal is not 1 statements. got=%d\n",
+			len(exp.Internal.Statements))
+	}
+
+	// 内部処理に変換
+	internal, ok := exp.Internal.Statements[0].(*ast.ExpressionStatement)
+
+	// 変換が完了したか
+	if !ok{
+		t.Fatalf("Statements[0] is not ast.ExprssionStatement. got=%T",
+					exp.Internal.Statements[0])
+	}
+
+	// 内部処理に１って書いてある
+	testIntegerLiteral(t, internal.Expression, 1)
+}
 func TestIfElseExpression(t *testing.T) {
 	input := `if (x < y) { x } else { y }`
 
@@ -780,9 +836,6 @@ func TestFunctionLiteralParsing(t *testing.T){
 		t.Fatalf("function body stmt is not ast.ExprssionStatement. got=%T",
 			function.Body.Statements[0])
 	}
-
-	fmt.Println(function.Body)
-	fmt.Println(function.Body.Statements[0])
 
 	// 	式チェック
 	testInfixExpresison(t, bodyStmt.Expression, "x", "+", "y")

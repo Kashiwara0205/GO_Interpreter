@@ -55,6 +55,7 @@ const (
 	// 追加対応
 	STRING = "STRING"
 	COLON = ":"
+	LOOP = "loop"
 )
 
 // キーワードハッシュ
@@ -68,6 +69,7 @@ var keywords = map[string]TokenType {
 	"if": IF,
 	"else": ELSE,
 	"return": RETURN,
+	"loop": LOOP,
 }
 
 //　定義しておいた特別な意味をもつ文字列なのか、どうか検証する

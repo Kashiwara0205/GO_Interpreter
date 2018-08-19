@@ -163,6 +163,25 @@ func TestIfElseExpressions(t *testing.T){
 	}
 }
 
+func TestLoopExpressions(t *testing.T){
+	tests := []struct{
+		input string
+		expected interface{}
+	}{
+		{"loop (5) { 1 }", 1},
+		{"loop (5) { 10 }", 10},
+	}
+
+	for _, tt := range tests{
+		evaluated := testEval(tt.input)
+		integer, ok := tt.expected.(int)
+		if ok{
+			testIntegerObject(t, evaluated, int64(integer))
+		}
+	}
+	
+}
+
 func testNullObject(t *testing.T, obj object.Object) bool{
 	if obj != NULL{
 		t.Errorf("object is not NULL. got=%T (%+v)", obj, obj)

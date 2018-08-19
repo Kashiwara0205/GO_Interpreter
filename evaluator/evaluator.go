@@ -59,6 +59,9 @@ func Eval(node ast.Node, env *object.Enviroment) object.Object{
 	case *ast.IfExpression:
 		return evalIfExpression(node, env)
 
+	case *ast.LoopExpression:
+		return evalLoopExpression(node, env)
+
 	case *ast.ReturnStatement:
 		val := Eval(node.ReturnValue, env)
 		if isError(val){
@@ -232,6 +235,23 @@ func evalIfExpression(ie *ast.IfExpression, env *object.Enviroment) object.Objec
 	}else{
 		return NULL
 	}
+}
+
+func evalLoopExpression(le *ast.LoopExpression, env *object.Enviroment) object.Object{
+	condition := Eval(le.Condition, env)
+
+	if isError(condition){
+		return condition
+	}
+
+	countdown := condition.(*object.Integer).Value
+	for countdown > 1{
+		Eval(le.Internal, env)
+		countdown --
+	}
+
+	last := Eval(le.Internal, env)
+	return last
 }
 
 func isTruthy(obj object.Object) bool{

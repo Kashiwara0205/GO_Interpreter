@@ -447,3 +447,21 @@ func (hl *HashLiteral) String() string{
 
 	return out.String()
 }
+
+type LoopExpression struct{
+	Token token.Token
+	Condition Expression     // 状態
+	Internal *BlockStatement // ループする内部の部分
+}
+func (lo *LoopExpression) expressionNode() {}
+func (lo *LoopExpression) TokenLiteral() string { return lo.Token.Literal }
+func (lo *LoopExpression) String() string{
+	var out bytes.Buffer
+
+	out.WriteString("loop")
+	out.WriteString(lo.Condition.String())
+	out.WriteString(" ")
+	out.WriteString(lo.Internal.String())
+
+	return out.String()
+}
