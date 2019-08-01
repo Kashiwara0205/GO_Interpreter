@@ -12,10 +12,10 @@ var (
 	FALSE = &object.Boolean{Value: false}
 )
 
-// 5 という式の場合こういう順序
+// 5 という式の場合以下のような順序となる
 // program ⇒　exoression ⇒　integerLiteral ⇒　program　⇒ return
 func Eval(node ast.Node, env *object.Enviroment) object.Object{
-	// 変換じゃなくて型のswitchをするのが.(type)
+	// 変換ではなく、型のswitchをするのが .(type) になる
 	switch node := node.(type){
 	case *ast.Program:
 		// プログラムノードから、このswitch文に連続で入る
@@ -42,7 +42,7 @@ func Eval(node ast.Node, env *object.Enviroment) object.Object{
 
 	case *ast.InfixExpression:
 		// 再帰的に回すために、例えば1 + 1 + 1とかなら
-		//　最終的にleftには2 rightには1が入る
+		// 最終的にleftには2 rightには1が入る
 		left := Eval(node.Left, env)
 		if isError(left){
 			return left
@@ -80,7 +80,7 @@ func Eval(node ast.Node, env *object.Enviroment) object.Object{
 		params := node.Parameters
 		body := node.Body
 		return &object.Function{Parameters: params, Env: env, Body: body}
-	
+
 	case *ast.CallExpression:
 		function := Eval(node.Function, env)
 		if isError(function){
@@ -92,7 +92,7 @@ func Eval(node ast.Node, env *object.Enviroment) object.Object{
 		if len(args) == 1 && isError(args[0]){
 			return args[0]
 		}
-		
+
 		return applyFunction(function, args)
 
 	case *ast.StringLiteral:
@@ -106,7 +106,7 @@ func Eval(node ast.Node, env *object.Enviroment) object.Object{
 			return elements[0]
 		}
 		return &object.Array{Elements: elements}
-	
+
 	case *ast.IndexExpression:
 		left := Eval(node.Left, env)
 		if isError(left){
@@ -117,7 +117,7 @@ func Eval(node ast.Node, env *object.Enviroment) object.Object{
 			return index
 		}
 		return evalIndexExpression(left, index)
-	
+
 	case *ast.HashLiteral:
 		return evalHashLiteral(node, env)
 	}
@@ -125,7 +125,7 @@ func Eval(node ast.Node, env *object.Enviroment) object.Object{
 	return nil
 }
 
-// ボコボコ生み出すのではなく一つのtrueとfalseを使い回す
+// 最適化のために一つのtrueとfalseを使い回す
 func nativeBoolToBooleanObject(input bool) *object.Boolean{
 	if input{
 		return TRUE
@@ -152,7 +152,6 @@ func evalBangOperatorExpression(right object.Object) object.Object{
 		return TRUE
 	case NULL:
 		return TRUE
-	// !5とかがfalseになるのはこいつのおかげ
 	default:
 		return FALSE
 	}
@@ -219,7 +218,6 @@ func evalIntegerInfixExpression(operator string, left, right object.Object) obje
 
 func evalIfExpression(ie *ast.IfExpression, env *object.Enviroment) object.Object{
 	// 正常な場合ならInfixExpression（式）が評価されて返却される
-	// true or false
 	condition := Eval(ie.Condition, env)
 	if isError(condition){
 		return condition
@@ -247,7 +245,6 @@ func isTruthy(obj object.Object) bool{
 	}
 }
 
-// 大元
 func evalProgram(program *ast.Program, env *object.Enviroment) object.Object{
 	var result object.Object
 	for _, statement := range program.Statements{
@@ -450,7 +447,7 @@ func evalHashLiteral(
 func evalHashIndexExpression(hash, index object.Object) object.Object {
 	hashObject := hash.(*object.Hash)
 	key, ok := index.(object.Hashable)
-	
+
 	if !ok{
 		return newError("unsable as hash key: %s", index.Type())
 	}
@@ -459,6 +456,6 @@ func evalHashIndexExpression(hash, index object.Object) object.Object {
 	if !ok{
 		return NULL
 	}
-	
+
 	return pair.Value
 }

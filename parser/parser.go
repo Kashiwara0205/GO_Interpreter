@@ -8,7 +8,7 @@ import(
 	"strconv"
 )
 
-//優先度-------------------------------------------------------------------
+// 優先度
 const (
 	_int = iota            //　⇒　0始まり
 	LOWSET
@@ -20,19 +20,17 @@ const (
 	CALL                   // myFunction(X)
 	INDEX                  // array[index]
 )
-//-----------------------------------------------------------------------------
 
-//エイリアス---------------------------------------------------------------------
+// エイリアス
 type(
 	// 前置型
 	prefixParseFn func() ast.Expression
 	// 中置型
 	infixParseFn func(ast.Expression) ast.Expression
 )
-//------------------------------------------------------------------------------
 
 
-//precedences---------------------------------------------------------------------
+// precedences(+や-のトークンの集まり)
 var precedences = map[token.TokenType]int{
 	token.EQ: EQUALS,
 	token.NOT_EQ: EQUALS,
@@ -45,11 +43,8 @@ var precedences = map[token.TokenType]int{
 	token.LPAREN: CALL,
 	token.LBRACKET: INDEX,
 }
-//------------------------------------------------------------------------------------
 
-
-
-//Parserの定義------------------------------------------------------------------------
+// Parser
 type Parser struct{
 	// 字句解析インスタンスへのポインタ nextToken()等で使用
 	l *lexer.Lexer
@@ -64,10 +59,9 @@ type Parser struct{
 	prefixParseFns map[token.TokenType]prefixParseFn
 	infixParseFns map[token.TokenType]infixParseFn
 }
-//--------------------------------------------------------------------------
 
 
-/*解析関数以外の関数-------------------------------------------------------*/
+// 解析関数以外の関数
 func New(l *lexer.Lexer) *Parser{
 	// パーサーに字句解析で使う構造体を仕込む
 	p := &Parser{l: l,
@@ -76,8 +70,6 @@ func New(l *lexer.Lexer) *Parser{
 
 	//　前置型構文関数の初期化
 	p.prefixParseFns = make(map[token.TokenType]prefixParseFn)
-	// これと変わらん ⇒ 変数[token.IDENT] = p.parseIdentifier
-	// この時点では、curTokenなどは空が入るので注意
 	p.registerPrefix(token.IDENT, p.parseIdentifier)
 	p.registerPrefix(token.INT, p.parseIntegerLiteral)
 	p.registerPrefix(token.BANG, p.parsePrefixExpression)
@@ -104,10 +96,11 @@ func New(l *lexer.Lexer) *Parser{
 	p.registerInfix(token.LPAREN, p.parseCallExpression)
 	p.registerInfix(token.LBRACKET, p.parseIndexExpression)
 
+
 	// 最初のpeekTokenには値が保持されていないため
 	// ２回呼び出して
-	// curToken =  null →　curToken = 値１
-	// peekToken = 値１　→　peekToken = 値2 といった具合にする
+	// curToken =  null → curToken = 値１
+	// peekToken = 値１ → peekToken = 値2 といった具合になる
 	p.nextToken()
 	p.nextToken()
 
@@ -195,14 +188,9 @@ func (p *Parser) curPrecedence() int{
 
 	return LOWSET
 }
-/*---------------------------------------------------------------------------------------*/
 
-
-
-/*ParseProgram解析----------------------------------------------------------------------*/
-//何を解析するか：全ての解析関数の親元
-//              astを生成
-
+// 全ての解析関数の親元
+// astを生成
 // astは抽象構文木
 // ここにきた時点で字句解析は終わってる
 func (p *Parser) ParseProgram() *ast.Program{
@@ -220,10 +208,10 @@ func (p *Parser) ParseProgram() *ast.Program{
 
 		// letなのかifなのかfuncなのか　それに対する「木」が帰ってくる
 		// letやifなどのキーワードが先頭にあった場合だけエラーを発報するようになっている
-		// なので一度エラーがおきても引き続き連鎖で全部死ぬことはない
+		// なので一度エラーがおきても引き続き連鎖で全てがエラーになることはない
 		stmt := p.parseStatement()
 		if stmt != nil{
-			// 木をがっちゃんこ
+			// 木を追加する
 			program.Statements = append(program.Statements, stmt)
 		}
 		// 次のトークンへ
@@ -234,14 +222,8 @@ func (p *Parser) ParseProgram() *ast.Program{
 	return program
 }
 
-/*-----------------------------------------------------------------------*/
-
-
-
-/*parseStatement解析---------------------------------------------------------*/
-//解析内容：　トークンを見て、適切な解析関数に飛ばす
-
-// let x 5みたいにミスったらnilが返却され続けて次のletまでいく
+// トークンを見て、適切な解析関数に飛ばす
+// let x 5みたいに間違っていたらnilが返却され続けて次のletまでいく
 // tokenを解析しツリー：Statementを返却
 func (p *Parser) parseStatement() ast.Statement{
 	// Tokenが何なのか
@@ -256,13 +238,8 @@ func (p *Parser) parseStatement() ast.Statement{
 		return p.parseExpressionStatement()
 	}
 }
-/*-----------------------------------------------------------------------------*/
 
-
-
-/*ParseLetStatement解析---------------------------------------------------------*/
-//何を解析するか： let a; let o = 0; などのlet文に関して解析する
-
+// let a; let o = 0; などのlet文に関して解析する
 // letをparseしてツリー：letStatmentを返却
 func (p *Parser) parseLetStatement() *ast.LetStatement{
 	// LetStatementツリーを作成
@@ -293,13 +270,7 @@ func (p *Parser) parseLetStatement() *ast.LetStatement{
 	return stmt
 }
 
-/*-----------------------------------------------------------------------------------*/
-
-
-
-/*parseReturnStatement解析---------------------------------------------------------*/
-//何を解析するか： retun hoge;などのretun文を解析する
-
+// retun hoge;などのretun文を解析する
 // returnをパース
 func (p *Parser) parseReturnStatement() *ast.ReturnStatement{
 	stmt := &ast.ReturnStatement{Token: p.curToken}
@@ -312,13 +283,9 @@ func (p *Parser) parseReturnStatement() *ast.ReturnStatement{
 	}
 	return stmt
 }
-/*---------------------------------------------------------------------------------*/
 
 
-
-/*parseExpressionStatement解析--------------------------------------------------*/
-// 何を解析するか: 式文の解析　hoge; low; みたいな
-
+// hoge; low;のような式文の解析
 // Expression_Statemntノードの作成
 func (p *Parser) parseExpressionStatement() *ast.ExpressionStatement{
 
@@ -335,16 +302,11 @@ func (p *Parser) parseExpressionStatement() *ast.ExpressionStatement{
 
 	return stmt
 }
-/*-----------------------------------------------------------------------------------*/
 
-
-
-/*parseExpression解析--------------------------------------------------------------------*/
-//何を解析するか: 「式」を全て解析する
+// 「式」を全て解析する
 // 全てのparse系の親元に値する
-// 　1の場合　⇒　parseIntegerLiteralへ
-//  -1の場合　⇒　prefixExpressionへ
-
+// 1の場合　⇒　parseIntegerLiteralへ
+// -1の場合　⇒　prefixExpressionへ
 func (p *Parser) parseExpression(precedence int) ast.Expression{
 	// 一発目に入ってくる場合はLOWSET
 
@@ -382,13 +344,8 @@ func (p *Parser) parseExpression(precedence int) ast.Expression{
 
 	return leftExp
 }
-/*---------------------------------------------------------------------------------*/
 
-
-
-/*parseIntegerLiteral解析---------------------------------------------------------*/
-//何を解析するか: 1, 200などの数値式
-
+// 1, 200などの数値式を解析
 func (p *Parser) parseIntegerLiteral() ast.Expression{
 	lit := &ast.IntegerLiteral{Token: p.curToken}
 
@@ -405,13 +362,7 @@ func (p *Parser) parseIntegerLiteral() ast.Expression{
 	return lit
 }
 
-/*----------------------------------------------------------------------------------------*/
-
-
-
-/*prefixExpression解析-------------------------------------------------------------------*/
-//何を解析するか: -1, !trueなど前に-や!がつくもの
-
+// -1, !trueなど前に-や!がつくものを解析
 func (p *Parser) parsePrefixExpression() ast.Expression{
 	// PrefixExpressionノードの作成
 	expression := &ast.PrefixExpression{
@@ -425,16 +376,10 @@ func (p *Parser) parsePrefixExpression() ast.Expression{
 
 	return expression
 }
-/*---------------------------------------------------------------------------------------*/
 
-
-/*parseInfixExpression解析---------------------------------------------------------------*/
-//何を解析するか: 中置型の式を解析
-//               1 + 1, 4 * 5
-// !!!
-
+//  中置型の式を解析(1 + 1, 4 * 5)
 func (p *Parser) parseInfixExpression(left ast.Expression) ast.Expression{
-	
+
 	expression := &ast.InfixExpression{
 		Token: p.curToken,
 		Operator: p.curToken.Literal,
@@ -447,7 +392,6 @@ func (p *Parser) parseInfixExpression(left ast.Expression) ast.Expression{
 	//１回めの比較　⇒ LOWSET 演算子
 	//2回めの比較　⇒ 演算子 演算子
 
-	// ここをすすめることにより　式と式の比較がpaeseなんちゃらで可能になる
 	p.nextToken()
 
 	// 右も左と同じようにinteface型のものになる
@@ -455,29 +399,22 @@ func (p *Parser) parseInfixExpression(left ast.Expression) ast.Expression{
 
 	// a + b * c この場合だと下記のようになる
 	// [ a ] + [ b ]
-	//		   ([ b ] * [ c ])　←　bが帰ってくるのではなくこいつが帰ってくる
+	//		   ([ b ] * [ c ])　←　bが帰ってくるのではなく左の式が返ってくる
 	expression.Right = p.parseExpression(precedence)
 
 	return expression
 }
-/*---------------------------------------------------------------------------------------*/
 
-
-/*parseBoolean解析-----------------------------------------------------------------------*/
-//何を解析するか: 真偽値
+// 真偽値を解析する
 func (p *Parser) parseBoolean() ast.Expression{
 	// curTokenISで現在トークンがtrueならtrueが
 	//             現在トークンがfalseならfalseが入る
 
 	return &ast.Boolean{Token: p.curToken, Value: p.curTokenIs(token.TRUE)}
 }
-/*---------------------------------------------------------------------------------------*/
 
-
-/*parseGroupedExpression解析--------------------------------------------------------*/
-//何を解析するか: グループ式 (1 + 1)* 4とか
-// 優先度の変更をしている
-
+//  何を解析するか: グループ式 (1 + 1)* 4とか
+//  優先度の変更をしている
 func (p *Parser)  parseGroupedExpression() ast.Expression{
 	// [ ( ] [ a ]の aに移動する
 	p.nextToken()
@@ -492,9 +429,7 @@ func (p *Parser)  parseGroupedExpression() ast.Expression{
 
 	return exp
 }
-/*-------------------------------------------------------------------------------*/
 
-/*IfExpression解析---------------------------------------------------------------*/
 func (p *Parser) parseIfExpression() ast.Expression{
 	// IfExpressionの生成
 	expression := &ast.IfExpression{Token: p.curToken}
@@ -505,7 +440,6 @@ func (p *Parser) parseIfExpression() ast.Expression{
 		return nil
 	}
 
-	// [ 式 ] ←こいつになった
 	p.nextToken()
 
 	// if (x < y)とかの場合は、InfixExpressionが帰ってくる
@@ -541,18 +475,16 @@ func (p *Parser) parseIfExpression() ast.Expression{
 	}
 	return expression
 }
-/*-------------------------------------------------------------------------------*/
 
-/*parseBlockStatement解析-------------------------------------------------------*/
 func (p *Parser) parseBlockStatement() *ast.BlockStatement {
 	// ブロックステートメントノードを生成
 	block := &ast.BlockStatement{Token: p.curToken}
 	// ステートメントノードを持つ
 	block.Statements = []ast.Statement{}
-	// [ { ] ←　こいつの次だから処理に以降する
+	// ' { ' の次の時に処理に移行する
 	p.nextToken()
 
-	// [ } ] ←　これが来るか　ファイルの終わりまで読み取り
+	// ' } ' が来るか、ファイルの終わりまで読み取り
 	for !p.curTokenIs(token.RBRACE) && !p.curTokenIs(token.EOF){
 		// 新たにノードを構築する
 		stmt := p.parseStatement()
@@ -566,9 +498,7 @@ func (p *Parser) parseBlockStatement() *ast.BlockStatement {
 
 	return block
 }
-/*------------------------------------------------------------------------------*/
 
-/*parseFunctionLiteral解析-------------------------------------------------------*/
 func (p *Parser) parseFunctionLiteral() ast.Expression{
 	// FunctiioLiteralノードの作成
 	lit := &ast.FunctionLiteral{Token: p.curToken}
@@ -589,12 +519,10 @@ func (p *Parser) parseFunctionLiteral() ast.Expression{
 
 	// ごついStatementノードが刺さる
 	lit.Body = p.parseBlockStatement()
-	
+
 	return lit
 }
-/*----------------------------------------------------------------------------------*/
 
-/*parseFunctionParameters解析-------------------------------------------------------*/
 func (p *Parser) parseFunctionParameters() []*ast.Identifier{
 	// identifier(変数ノード)を配列で作成
 	identifiers := []*ast.Identifier{}
@@ -637,9 +565,7 @@ func (p *Parser) parseFunctionParameters() []*ast.Identifier{
 	// 返却
 	return identifiers
 }
-/*---------------------------------------------------------------------------------*/
 
-/*parseCallExpression解析-----------------------------------------------------------*/
 func (p *Parser) parseCallExpression(function ast.Expression) ast.Expression{
 	// CallExpressioノード作成
 	// Expressionの下にIDENTが刺さってる
@@ -650,9 +576,7 @@ func (p *Parser) parseCallExpression(function ast.Expression) ast.Expression{
 	// Caller返却
 	return exp
 }
-/*----------------------------------------------------------------------------------*/
 
-/*parseCallArguments解析-----------------------------------------------------------*/
 func (p *Parser) parseCallArguments() []ast.Expression{
 	// 式ノード配列を生成
 	args := []ast.Expression{}
@@ -674,7 +598,7 @@ func (p *Parser) parseCallArguments() []ast.Expression{
 		args = append(args, p.parseExpression(LOWSET))
 	}
 
-	// 右括弧チェック	
+	// 右括弧チェック
 	if !p.expectPeek(token.RPAREN){
 		return nil
 	}
@@ -682,8 +606,6 @@ func (p *Parser) parseCallArguments() []ast.Expression{
 	// 引数返却
 	return args
 }
-
-/*----------------------------------------------------------------------------------*/
 
 func (p *Parser) parseStringLiteral() ast.Expression {
 	return &ast.StringLiteral{ Token: p.curToken, Value: p.curToken.Literal}
@@ -697,7 +619,7 @@ func (p *Parser) parseArrayLiteral() ast.Expression{
 }
 
 func(p *Parser) parseExpressionList(end token.TokenType) []ast.Expression{
-	// 値なら何でも刺さるやつを生成
+	// 値なら何でも入るlistを生成
 	// ast.Expression型の配列を生成
 	list := []ast.Expression{}
 

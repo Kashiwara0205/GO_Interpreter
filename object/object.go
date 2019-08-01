@@ -140,7 +140,7 @@ func (i *Integer) HashKey() HashKey{
 }
 func (s *String) HashKey() HashKey{
 	// FNV-1a
-	// 文字列は乱雑な数値になる
+	// 文字列は乱雑数値になる
 	h := fnv.New64a()
 	h.Write([]byte(s.Value))
 

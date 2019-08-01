@@ -53,9 +53,7 @@ func (l *Lexer) NextToken() token.Token {
 	// 読み取った文字をswitchにかける
 	switch l.ch{
 	case '=':
-		// 2文字タイプの演算子、例えば　== なら[=][=]となり=が２回続いていると判断されるので
-		// それをくいとめる
-		// ==
+		// 2文字タイプの演算子、例えば　== なら[=][=]となり=が２回続いていると判断されるので、それを防ぐため
 		if l.peekChar() == '='{
 			ch := l.ch
 			// １イコール分をよみとっておく
@@ -119,7 +117,7 @@ func (l *Lexer) NextToken() token.Token {
 		if isLetter(l.ch){
 			// max_sum などの変数？がliteralに代入される
 			tok.Literal = l.readIdentifiter()
-			// let や　funcなどの特別な文字列かどうか
+			// let や funcなどの特別な文字列かどうか
 			// ここのTypeには特別な文字列の場合　→ LET FUNCTIONとか入る
 			// 普通だったらIDENTが入る
 			tok.Type = token.LookupIdent(tok.Literal)
@@ -157,7 +155,7 @@ func (l *Lexer) readIdentifiter() string{
 		// 次の文字へ
 		l.readChar()
 	}
-	
+
 
 	// 読み取った部分をスライスで切り取ってreturn
 	//　例　max_num, hogeなど

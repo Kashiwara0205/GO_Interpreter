@@ -10,11 +10,11 @@ func TestNextToken(t *testing.T){
 	// 	評価される文字列
 	input := `let five = 5;
 	let ten = 10;
-	
+
 	let add = fn(x, y){
 		x + y;
 	};
-	
+
 	let result = add(five, ten);
 	!-/*5;
 	5 < 10 > 5;
@@ -24,7 +24,7 @@ func TestNextToken(t *testing.T){
 	}else{
 		return false;
 	}
-	
+
 	10 == 10;
 	10 != 9;
 	"foobar"
@@ -40,7 +40,7 @@ func TestNextToken(t *testing.T){
 		expectedType    token.TokenType
 		// 実際の意味
 		expectedLiteral string
-	}{	
+	}{
 		{token.LET, "let"},
 		{token.IDENT, "five"},
 		{token.ASSIGN, "="},
@@ -133,7 +133,6 @@ func TestNextToken(t *testing.T){
 	// 最初の一文字を読み取ってきた状態のLexerが帰ってくる
 	l := New(input)
 
-	// 初期値をガン回し
 	for i, tt := range tests {
 		// 1文字　1トークン扱い
 		// トークンが帰ってくる
