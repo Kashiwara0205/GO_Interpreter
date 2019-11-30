@@ -13,7 +13,7 @@ type Token struct{
 const (
 	ILLEGAL = "ILLEGAL"   // 未知な文字列・未知なトークン.
 	EOF = "EOF"           // ファイル終端.
-	
+
 	// 識別子 + リテラル
 	IDENT = "IDENT"
 	INT = "INT"
@@ -75,7 +75,7 @@ var keywords = map[string]TokenType {
 //　定義しておいた特別な意味をもつ文字列なのか、どうか検証する
 func LookupIdent(ident string)TokenType{
 	// keywordsに特別な意味の文字列があるかどうか
-	// let　とか foobarとか
+	// let とか foobarとか
 	if tok, ok := keywords[ident]; ok{
 		// あれば、その文字列を返却
 		return tok

@@ -7,47 +7,29 @@ import (
 )
 
 
-
-/*Node--------------------------------------------------------------------------------------------*/
-//特徴：全intercace型のトップ
-//     ここに書かれたメソッドは継承しているインターフェースで必ず実現しなければいけない
-
+// 全intercace型のトップ
+// ここに書かれたメソッドは継承しているインターフェースで必ず実現しなければいけない
 type Node interface{
 	TokenLiteral() string
 	String() string
 }
-/*-------------------------------------------------------------------------------------------------*/
 
-
-
-/*Staement_interface-----------------------------------------------------------------------------------*/
-//特徴: Statementノードには、どんなStatementでも入る（LetとかReturnとか）
-
+// Statementノードには、どんなStatementでも入る（LetとかReturnとか)
 type Statement interface{
 	Node
 	statementNode()
 }
-/*-------------------------------------------------------------------------------------------------*/
 
-
-
-/*Expresion_interface------------------------------------------------------------------------*/
 // 特徴：hoge = 5の5を保持する
 // 値の保持に何かと使用する。　
-
 type Expression interface{
 	Node
 	expressionNode()
 }
-/*------------------------------------------------------------------------------------------*/
 
-
-
-/*ProgramStatementノード----------------------------------------------------------------------*/
-//特徴: 全てのStatementの親ノードに値するノード
-//      LetやReturnなどのStatementを管理
-//      抽象構文木の一番上にいる
-
+// 全てのStatementの親ノードに値するノード
+// LetやReturnなどのStatementを管理
+// 抽象構文木の一番上にいる
 type Program struct{
 	// Statmentインターフェース型配列
 	// この中には構造体のアドレスが入る
@@ -72,16 +54,11 @@ func (p *Program) String() string{
 
 	return out.String()
 }
-/*----------------------------------------------------------------------------------------------*/
 
-
-
-/*LetStatementノード------------------------------------------------------------------------------*/
-// 特徴: Letという定義文を解析するためのノード
+// Letという定義文を解析するためのノード
 // let x = 5などの解析に使用
 // Name →　hoge
 // Value →　5
-
 type LetStatement struct{
 	Token token.Token
 	// Nameのほうが*Identifierで固定なのは、変数名が絶対くるから
@@ -103,7 +80,7 @@ func (ls *LetStatement) String() string{
 	out.WriteString(ls.TokenLiteral() + " ")
 	// 変数名　NameはIdenfifiter型なので、別のstring型を呼び出してる
 	out.WriteString(ls.Name.String())
-	// = 
+	// =
 	out.WriteString(" = ")
 
 	// 代入されるべき数字
@@ -116,16 +93,8 @@ func (ls *LetStatement) String() string{
 	return out.String()
 }
 
-/*-----------------------------------------------------------------------------------------------------*/
-
-
-
-/*IdentfierStatementノード----------------------------------------------------------------------------------------*/
-// 特徴: LetStatementの子ノード
+// LetStatementの子ノード
 // let x = 5のｘの部分を記憶するために使用
-
-// hoge = 5のhogeを束縛
-// 変数
 type Identifier struct{
 	Token token.Token
 	Value string
@@ -135,15 +104,10 @@ func (i *Identifier) expressionNode() {}
 // IdentfierのTokenLiteral
 func (i *Identifier) TokenLiteral() string { return i.Token.Literal }
 
-// 変数名が帰ってくるだけ
+// 変数名が帰ってくる
 func (i *Identifier) String() string {return i.Value}
-/*----------------------------------------------------------------------------------------------------*/
 
-
-
-/*ReturｎStatementノード----------------------------------------------------------------------------------------*/
-// 特徴: rerutn　1 などのreturn文を解析するために使用するノード
-
+// rerutn　1 などのreturn文を解析するために使用するノード
 type ReturnStatement struct{
 	Token token.Token
 	ReturnValue Expression
@@ -165,13 +129,8 @@ func(rs *ReturnStatement) String() string{
 
 	return out.String()
 }
-/*----------------------------------------------------------------------------------------*/
 
-
-
-/*ExpresionStatementノード---------------------------------------------------------------------------*/
-//特徴：  myvalue;のような式文解析に使用
-
+// myvalue;のような式文解析に使用
 type ExpressionStatement struct{
 	Token token.Token
 	Expression Expression
@@ -186,13 +145,8 @@ func (es *ExpressionStatement) String() string{
 	}
 	return ""
 }
-/*-----------------------------------------------------------------------------------------------*/
 
-
-
-/*IntegerLiteralノード---------------------------------------------------------------------------*/
-//特徴：  5;のような式解析に使用
-
+// 5;のような式解析に使用する構文ノード
 type IntegerLiteral struct{
 	Token token.Token
 	Value int64
@@ -201,12 +155,8 @@ type IntegerLiteral struct{
 func (il *IntegerLiteral) expressionNode() {}
 func (il *IntegerLiteral) TokenLiteral() string {return il.Token.Literal}
 func (il *IntegerLiteral) String() string {return il.Token.Literal}
-/*----------------------------------------------------------------------------------------------*/
 
-
-
-/*PrefixExpressionノード--------------------------------------------------------------------------*/
-// 特徴: -とか!とかの解析に使う　!true -5
+// - や ! の解析に使う構文ノード
 type PrefixExpression struct{
 	Token token.Token
 	Operator string
@@ -224,12 +174,9 @@ func (pe *PrefixExpression) String() string{
 
 	return out.String()
 }
-/*-----------------------------------------------------------------------------------------------*/
 
-
-/*InfixExpressionノード--------------------------------------------------------------------------*/
-// 特徴: <Left: 前置型で解析してできたノード> <Operator: 演算子> <Right: 前置型で解析してできたノード>
-//       で構成された中置型のノード。　1 + 1など 1 < 1などを管理する。
+// <Left: 前置型で解析してできたノード> <Operator: 演算子> <Right: 前置型で解析してできたノード>
+//        で構成された中置型のノード。　1 + 1など 1 < 1などを管理する。
 type InfixExpression struct{
 	Token token.Token
 	Left Expression
@@ -250,12 +197,7 @@ func (oe *InfixExpression) String() string{
 
 	return out.String()
 }
-/*----------------------------------------------------------------------------------------------*/
 
-
-
-/*Booleanノード-------------------------------------------------------------------------------------*/
-// 特徴: 真偽値やねん
 type Boolean struct{
 	Token token.Token
 	Value bool
@@ -264,12 +206,8 @@ type Boolean struct{
 func(b *Boolean) expressionNode() {}
 func(b *Boolean) TokenLiteral() string {return b.Token.Literal}
 func(b *Boolean) String() string {return b.Token.Literal}
-/*------------------------------------------------------------------------------------------------*/
 
-
-
-/*IfExpressionノード-----------------------------------------------------------------------------------------*/
-// 特徴: if文解析ノード
+// if文構文ノード
 type IfExpression struct{
 	Token token.Token
 	Condition Expression
@@ -294,11 +232,8 @@ func (ie *IfExpression) String() string{
 
 	return out.String()
 }
-/*------------------------------------------------------------------------------------------------*/
 
-
-/*BlockStatementノード------------------------------------------------------------------------------*/
-// 特徴: if文の{}←ここのとこ
+// if文の' { } 'の部分の構文ノード
 type BlockStatement struct{
 	Token token.Token
 	Statements []Statement
@@ -315,12 +250,7 @@ func (bs *BlockStatement) String() string{
 
 	return out.String()
 }
-/*-------------------------------------------------------------------------------------------------*/
 
-
-
-/*FunctionLiteralノード------------------------------------------------------------------------------*/
-// 特徴: 関数のやつ
 type FunctionLiteral struct{
 	Token token.Token
 	Parameters []*Identifier
@@ -345,11 +275,8 @@ func(fl *FunctionLiteral) String() string{
 
 	return out.String()
 }
-/*--------------------------------------------------------------------------------------------------*/
 
-
-/*CallExpressionノード-------------------------------------------------------------------------------*/
-// 特徴: これは、add(1, 2)のようなメソッドを呼び出すための構文解析パーツである
+// add(1, 2)のようなメソッドを呼び出すための構文ノード
 type CallExpression struct{
 	Token token.Token
 	Function Expression
@@ -373,10 +300,7 @@ func (ce *CallExpression) String() string{
 
 	return out.String()
 }
-/*---------------------------------------------------------------------------------------------------*/
 
-
-/*StringLiteralノード-------------------------------------------------------------------------------*/
 type StringLiteral struct{
 	Token token.Token
 	Value string
@@ -385,7 +309,6 @@ type StringLiteral struct{
 func (sl *StringLiteral) expressionNode() {}
 func (sl *StringLiteral) TokenLiteral() string { return sl.Token.Literal}
 func (sl *StringLiteral) String() string {return sl.Token.Literal}
-/*--------------------------------------------------------------------------------------------------*/
 
 type ArrayLiteral struct{
 	Token token.Token

@@ -55,7 +55,7 @@ func TestLetStatement(t *testing.T){
 		stmt := program.Statements[i]
 
 		if !testLetStatement(t, stmt, tt.expectedIdentifier){
-			return 
+			return
 		}
 	}
 }
@@ -64,7 +64,7 @@ func TestLetStatement(t *testing.T){
 func checkParseErrors(t *testing.T, p *Parser){
 	errors := p.Errors()
 	if len(errors) == 0{
-		return 
+		return
 	}
 	t.Errorf("parser has %d errors", len(errors))
 	for _, msg := range errors{
@@ -408,7 +408,7 @@ func TestOpreatorPrecedenceParsiong(t *testing.T){
 			"false",
 			"false",
 		},
-		{	
+		{
 			"3 > 5 == false",
 			"((3 > 5) == false)",
 		},
@@ -468,7 +468,7 @@ func TestOpreatorPrecedenceParsiong(t *testing.T){
 		program := p.ParseProgram()
 		// エラー探知
 		checkParseErrors(t, p)
-		
+
 		// 中置型の構文木が、ちゃんと優先度守って括弧つけられているのかを見る
 		actual := program.String()
 		if actual != tt.expected{
@@ -557,7 +557,7 @@ func TestBooleanExpression(t *testing.T) {
 		p := New(l)
 		program := p.ParseProgram()
 		checkParseErrors(t, p)
-		
+
 		if len(program.Statements) != 1 {
 			t.Fatalf("program has not enough statements. got=%d",
 				len(program.Statements))
@@ -769,8 +769,6 @@ func TestIfElseExpression(t *testing.T) {
 			len(exp.Alternative.Statements))
 	}
 
-	// ifの時とかわらない
-	// AlternativeにStatementsが査察てる
 	alternative, ok := exp.Alternative.Statements[0].(*ast.ExpressionStatement)
 	if !ok {
 		t.Fatalf("Statements[0] is not ast.ExpressionStatement. got=%T",
@@ -798,13 +796,13 @@ func TestFunctionLiteralParsing(t *testing.T){
 			1, len(program.Statements))
 	}
 
-	// いつもの式変換
+	// 式変換
 	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
 	if !ok{
 		t.Fatalf("stmt.Expression is not ast.FunctionLiteral. got=%T",
 			stmt.Expression)
 	}
-	
+
 	// 関数のノードに変換
 	function, ok := stmt.Expression.(*ast.FunctionLiteral)
 	if !ok{
@@ -822,7 +820,7 @@ func TestFunctionLiteralParsing(t *testing.T){
 	testLiteralExpression(t, function.Parameters[0], "x")
 	testLiteralExpression(t, function.Parameters[1], "y")
 
-	
+
 	// x + y;の部分は式になるので１であってる
 	if len(function.Body.Statements) != 1{
 		t.Fatalf("function.Body.Statments has not 1 statements. got=%d\n",
@@ -1004,7 +1002,7 @@ func TestParsingIndexExpression(t *testing.T){
 		return
 	}
 	if !testInfixExpresison(t, indexExp.Index, 1, "+", 1){
-		return 
+		return
 	}
 }
 
@@ -1041,7 +1039,7 @@ func TestParsingHashLiteralsStringKeys(t *testing.T){
 
 		testIntegerLiteral(t, value, expectedValue)
 	}
-	
+
 }
 
 func TestParsingEmptyHashLiteral(t *testing.T){
@@ -1088,7 +1086,7 @@ func TestParsingHashLiteralsWithExpressions(t *testing.T){
 			testInfixExpresison(t, e, 10, "-", 8)
 		},
 		"three": func(e ast.Expression){
-			testInfixExpresison(t, e, 15, "/", 5)	
+			testInfixExpresison(t, e, 15, "/", 5)
 		},
 	}
 
